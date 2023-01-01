@@ -21,5 +21,6 @@
 
 fixvhdw2：用于写入硬盘
 HexView：用于查看二进制文件
+notepad++：用于写代码
 
 ***具体查看tool_pkg.rar***
