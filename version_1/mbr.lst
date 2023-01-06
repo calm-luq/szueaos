@@ -1,0 +1,52 @@
+     1                                  
+     2                                  ;初始化编译地址
+     3                                  org 0x7c00
+     4                                  
+     5                                  ;转跳到代码区
+     6 00000000 EB01                    jmp START
+     7 00000002 90                      nop
+     8                                  
+     9                                  ;自定义栈顶
+    10                                  Stack_Base equ 0x7c00
+    11                                  
+    12                                  START:
+    13                                  ;初始化段寄存器
+    14                                  ;此处cs=0x0000,ip=0x7c00
+    15 00000003 8CC8                    mov ax,cs
+    16 00000005 8ED8                    mov ds,ax
+    17 00000007 8ED0                    mov ss,ax
+    18 00000009 BC007C                  mov sp,Stack_Base
+    19                                  ;文本模式下的es
+    20 0000000C B800B8                  mov ax,0xb800
+    21 0000000F 8EC0                    mov es,ax
+    22                                  ;使用文本内存显示
+    23 00000011 26C60600004F            mov byte [es:0x00],'O'
+    24 00000017 26C60601004C            mov byte [es:0x01],0x4c
+    25 0000001D 26C606020053            mov byte [es:0x02],'S'
+    26 00000023 26C60603004C            mov byte [es:0x03],0x4c
+    27 00000029 26C606040020            mov byte [es:0x04],' '
+    28 0000002F 26C60605004C            mov byte [es:0x05],0x4c
+    29                                  ;使用bios中断显示
+    30 00000035 1E                      push ds
+    31 00000036 07                      pop es
+    32 00000037 BD[4B00]                mov bp,BOOTMSG
+    33 0000003A B90A00                  mov cx,10
+    34 0000003D B601                    mov dh,1
+    35 0000003F B200                    mov dl,0
+    36 00000041 B700                    mov bh,0
+    37 00000043 B000                    mov al,0
+    38 00000045 B34C                    mov bl,0x4c
+    39 00000047 B413                    mov ah,0x13
+    40 00000049 CD10                    int 0x10
+    41 0000004B 626F6F74696E672E2E-     BOOTMSG:db 'booting...'
+    41 00000054 2E                 
+    42                                  
+    43                                  ;循环，暂停在此
+    44                                  infi:
+    45 00000055 E9FDFF                  jmp near infi
+    46                                  
+    47                                  ;填充0，直到510Bytes
+    48 00000058 00<rep 1A6h>            times 510-($-$$) db 0
+    49                                  
+    50                                  ;魔数
+    51 000001FE 55AA                    db 0x55,0xaa
