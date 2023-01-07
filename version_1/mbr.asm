@@ -16,6 +16,13 @@ mov ax,cs
 mov ds,ax
 mov ss,ax
 mov sp,Stack_Base
+;清屏，ah=0x06或者0x07
+mov ah,0x06
+mov al,0x00
+mov bh,0x00
+mov cx,0x0000
+mov dx,0x184f
+int 0x10
 ;文本模式下的es
 mov ax,0xb800
 mov es,ax

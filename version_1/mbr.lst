@@ -16,37 +16,44 @@
     16 00000005 8ED8                    mov ds,ax
     17 00000007 8ED0                    mov ss,ax
     18 00000009 BC007C                  mov sp,Stack_Base
-    19                                  ;文本模式下的es
-    20 0000000C B800B8                  mov ax,0xb800
-    21 0000000F 8EC0                    mov es,ax
-    22                                  ;使用文本内存显示
-    23 00000011 26C60600004F            mov byte [es:0x00],'O'
-    24 00000017 26C60601004C            mov byte [es:0x01],0x4c
-    25 0000001D 26C606020053            mov byte [es:0x02],'S'
-    26 00000023 26C60603004C            mov byte [es:0x03],0x4c
-    27 00000029 26C606040020            mov byte [es:0x04],' '
-    28 0000002F 26C60605004C            mov byte [es:0x05],0x4c
-    29                                  ;使用bios中断显示
-    30 00000035 1E                      push ds
-    31 00000036 07                      pop es
-    32 00000037 BD[4B00]                mov bp,BOOTMSG
-    33 0000003A B90A00                  mov cx,10
-    34 0000003D B601                    mov dh,1
-    35 0000003F B200                    mov dl,0
-    36 00000041 B700                    mov bh,0
-    37 00000043 B000                    mov al,0
-    38 00000045 B34C                    mov bl,0x4c
-    39 00000047 B413                    mov ah,0x13
-    40 00000049 CD10                    int 0x10
-    41 0000004B 626F6F74696E672E2E-     BOOTMSG:db 'booting...'
-    41 00000054 2E                 
-    42                                  
-    43                                  ;循环，暂停在此
-    44                                  infi:
-    45 00000055 E9FDFF                  jmp near infi
-    46                                  
-    47                                  ;填充0，直到510Bytes
-    48 00000058 00<rep 1A6h>            times 510-($-$$) db 0
+    19                                  ;清屏，ah=0x06或者0x07
+    20 0000000C B406                    mov ah,0x06
+    21 0000000E B000                    mov al,0x00
+    22 00000010 B700                    mov bh,0x00
+    23 00000012 B90000                  mov cx,0x0000
+    24 00000015 BA4F18                  mov dx,0x184f
+    25 00000018 CD10                    int 0x10
+    26                                  ;文本模式下的es
+    27 0000001A B800B8                  mov ax,0xb800
+    28 0000001D 8EC0                    mov es,ax
+    29                                  ;使用文本内存显示
+    30 0000001F 26C60600004F            mov byte [es:0x00],'O'
+    31 00000025 26C60601004C            mov byte [es:0x01],0x4c
+    32 0000002B 26C606020053            mov byte [es:0x02],'S'
+    33 00000031 26C60603004C            mov byte [es:0x03],0x4c
+    34 00000037 26C606040020            mov byte [es:0x04],' '
+    35 0000003D 26C60605004C            mov byte [es:0x05],0x4c
+    36                                  ;使用bios中断显示
+    37 00000043 1E                      push ds
+    38 00000044 07                      pop es
+    39 00000045 BD[5900]                mov bp,BOOTMSG
+    40 00000048 B90A00                  mov cx,10
+    41 0000004B B601                    mov dh,1
+    42 0000004D B200                    mov dl,0
+    43 0000004F B700                    mov bh,0
+    44 00000051 B000                    mov al,0
+    45 00000053 B34C                    mov bl,0x4c
+    46 00000055 B413                    mov ah,0x13
+    47 00000057 CD10                    int 0x10
+    48 00000059 626F6F74696E672E2E-     BOOTMSG:db 'booting...'
+    48 00000062 2E                 
     49                                  
-    50                                  ;魔数
-    51 000001FE 55AA                    db 0x55,0xaa
+    50                                  ;循环，暂停在此
+    51                                  infi:
+    52 00000063 E9FDFF                  jmp near infi
+    53                                  
+    54                                  ;填充0，直到510Bytes
+    55 00000066 00<rep 198h>            times 510-($-$$) db 0
+    56                                  
+    57                                  ;魔数
+    58 000001FE 55AA                    db 0x55,0xaa
