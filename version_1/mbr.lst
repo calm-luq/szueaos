@@ -27,33 +27,65 @@
     27 0000001A B800B8                  mov ax,0xb800
     28 0000001D 8EC0                    mov es,ax
     29                                  ;使用文本内存显示
-    30 0000001F 26C60600004F            mov byte [es:0x00],'O'
-    31 00000025 26C60601004C            mov byte [es:0x01],0x4c
-    32 0000002B 26C606020053            mov byte [es:0x02],'S'
-    33 00000031 26C60603004C            mov byte [es:0x03],0x4c
-    34 00000037 26C606040020            mov byte [es:0x04],' '
-    35 0000003D 26C60605004C            mov byte [es:0x05],0x4c
-    36                                  ;使用bios中断显示
-    37 00000043 1E                      push ds
-    38 00000044 07                      pop es
-    39 00000045 BD[5900]                mov bp,BOOTMSG
-    40 00000048 B90A00                  mov cx,10
-    41 0000004B B601                    mov dh,1
-    42 0000004D B200                    mov dl,0
-    43 0000004F B700                    mov bh,0
-    44 00000051 B000                    mov al,0
-    45 00000053 B34C                    mov bl,0x4c
-    46 00000055 B413                    mov ah,0x13
-    47 00000057 CD10                    int 0x10
-    48 00000059 626F6F74696E672E2E-     BOOTMSG:db 'booting...'
-    48 00000062 2E                 
-    49                                  
-    50                                  ;循环，暂停在此
-    51                                  infi:
-    52 00000063 E9FDFF                  jmp near infi
-    53                                  
-    54                                  ;填充0，直到510Bytes
-    55 00000066 00<rep 198h>            times 510-($-$$) db 0
-    56                                  
-    57                                  ;魔数
-    58 000001FE 55AA                    db 0x55,0xaa
+    30 0000001F 26C6060A004F            mov byte [es:10],'O'
+    31 00000025 26C6060B004C            mov byte [es:11],0x4c
+    32 0000002B 26C6060C0053            mov byte [es:12],'S'
+    33 00000031 26C6060D004C            mov byte [es:13],0x4c
+    34                                  ;使用bios中断显示
+    35 00000037 1E                      push ds
+    36 00000038 07                      pop es
+    37 00000039 BD[8D00]                mov bp,BOOTMSG1
+    38 0000003C B90500                  mov cx,5
+    39 0000003F B600                    mov dh,0
+    40 00000041 B200                    mov dl,0
+    41 00000043 B700                    mov bh,0
+    42 00000045 B000                    mov al,0
+    43 00000047 B34C                    mov bl,0x4c
+    44 00000049 B413                    mov ah,0x13
+    45 0000004B CD10                    int 0x10
+    46                                  
+    47 0000004D BD[9200]                mov bp,BOOTMSG2
+    48 00000050 B90A00                  mov cx,10
+    49 00000053 B601                    mov dh,1
+    50 00000055 B200                    mov dl,0
+    51 00000057 B700                    mov bh,0
+    52 00000059 B000                    mov al,0
+    53 0000005B B34C                    mov bl,0x4c
+    54 0000005D B413                    mov ah,0x13
+    55 0000005F CD10                    int 0x10
+    56                                  ;等待键盘按键
+    57 00000061 B400                    mov ah,0
+    58 00000063 CD16                    int 0x16
+    59                                  ;显示按键
+    60 00000065 26A20E00                mov byte [es:14],al
+    61 00000069 26C6060F004C            mov byte [es:15],0x4c
+    62 0000006F 2688261000              mov byte [es:16],ah
+    63 00000074 26C60611004C            mov byte [es:17],0x4c
+    64                                  ;滚行，屏幕下卷
+    65 0000007A B407                    mov ah,0x07
+    66 0000007C B017                    mov al,23
+    67 0000007E B503                    mov ch,3
+    68 00000080 B100                    mov cl,0
+    69 00000082 B618                    mov dh,24
+    70 00000084 B24F                    mov dl,79
+    71 00000086 B777                    mov bh,0x77
+    72 00000088 CD10                    int 0x10
+    73                                  
+    74                                  ;循环，暂停在此
+    75                                  infi:
+    76 0000008A E9FDFF                  jmp near infi
+    77 0000008D 737A756561              BOOTMSG1:db 'szuea'
+    78 00000092 626F6F74696E672E2E-     BOOTMSG2:db 'booting...'
+    78 0000009B 2E                 
+    79                                  
+    80 0000009C B407                    mov ah,0x07
+    81 0000009E B001                    mov al,0x01
+    82 000000A0 B700                    mov bh,0x00
+    83 000000A2 B90000                  mov cx,0x0000
+    84 000000A5 BA4F18                  mov dx,0x184f
+    85 000000A8 CD10                    int 0x10
+    86                                  ;填充0，直到510Bytes
+    87 000000AA 00<rep 154h>            times 510-($-$$) db 0
+    88                                  
+    89                                  ;魔数
+    90 000001FE 55AA                    db 0x55,0xaa

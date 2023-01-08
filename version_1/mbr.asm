@@ -27,16 +27,24 @@ int 0x10
 mov ax,0xb800
 mov es,ax
 ;使用文本内存显示
-mov byte [es:0x00],'O'
-mov byte [es:0x01],0x4c
-mov byte [es:0x02],'S'
-mov byte [es:0x03],0x4c
-mov byte [es:0x04],' '
-mov byte [es:0x05],0x4c
+mov byte [es:10],'O'
+mov byte [es:11],0x4c
+mov byte [es:12],'S'
+mov byte [es:13],0x4c
 ;使用bios中断显示
 push ds
 pop es
-mov bp,BOOTMSG
+mov bp,BOOTMSG1
+mov cx,5
+mov dh,0
+mov dl,0
+mov bh,0
+mov al,0
+mov bl,0x4c
+mov ah,0x13
+int 0x10
+
+mov bp,BOOTMSG2
 mov cx,10
 mov dh,1
 mov dl,0
@@ -45,12 +53,31 @@ mov al,0
 mov bl,0x4c
 mov ah,0x13
 int 0x10
-BOOTMSG:db 'booting...'
+;等待键盘按键
+mov ah,0
+int 0x16
+;滚行，屏幕下卷
+mov ah,0x07
+mov al,23
+mov ch,3
+mov cl,0
+mov dh,24
+mov dl,79
+mov bh,0x77
+int 0x10
 
 ;循环，暂停在此
 infi:
 jmp near infi
+BOOTMSG1:db 'szuea'
+BOOTMSG2:db 'booting...'
 
+mov ah,0x07
+mov al,0x01
+mov bh,0x00
+mov cx,0x0000
+mov dx,0x184f
+int 0x10
 ;填充0，直到510Bytes
 times 510-($-$$) db 0
 
