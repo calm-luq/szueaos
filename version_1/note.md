@@ -168,7 +168,7 @@ cpu执行ffffh:0000h处的代码，即jmp f000h:e05bh
 
 （这个地址还要经过MCH和ICH的映射处理，BIOS的厂商不同跳转地址不同，而这个地址就是BIOS程序的入口地址）
 
-用于转跳到bios代码，这块代码会检测一些外设信息，并初始化好硬件，建立中断向量表并填写中断例程，如下
+用于转跳到bios代码，这块代码会检测一些外设信息POST(power on self test)，并初始化好硬件，建立中断向量表并填写中断例程，如下
 
 \- interrupts are disabled 
 关中断 
@@ -283,6 +283,8 @@ or cassette BASIC if no bootable disk found
 
 # other
 
+通电后，BIOS首先连接到南桥(ESB)，然后是北桥(MCH)，最后连接CPU<img src="https://img-blog.csdnimg.cn/20191029154939933.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3R5bHQ2Njg4,size_16,color_FFFFFF,t_70" alt="天宇龙腾出品" style="zoom:25%;" />
+
 1MB以下比较特殊，里面全部都是已经被淘汰的传统BIOS和DOS关心的内容，我们叫它DOS Space或者Legacy Region
 
 640KB~1MB 上台内存（这一地区的地址分派给ROM，相对应的384KB的RAM被屏蔽。说白了的身影内存技术性，便是把ROM具体内容读取到相匹配地址的RAM中，之后系统软件就从RAM中读取数据信息，而不是从原先的ROM读取数据信息，进而提高速度。）
@@ -298,7 +300,15 @@ BIOS 运行初期，CPU 其实是不能访问内存的，BIOS 所在的 FLASH �
 
 
 
-
+上电power good后停止reset，执行0xffff0
+post：线检测内存显卡等等
+查找并调用显卡和其他设备bios
+bios显示启动画面
+检测cpu，测试ram
+检查标准硬件设备，设置内存参数
+分配中断、DMA通道，IO端口
+更新ESCD（存在cmos中）
+读取主引导记录（55aa）
 
 
 
