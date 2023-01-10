@@ -312,7 +312,25 @@ bios显示启动画面
 
 
 
+内存地址分配
+
+[8086PC机内存地址空间分配的基本情况 - 哔哩哔哩 (bilibili.com)](https://www.bilibili.com/read/cv16105500/)
+
+[汇编语言学习笔记(三):8086地址内存分配_Stepfen Shawn的博客-CSDN博客_汇编语言地址分布](https://blog.csdn.net/qq_43933657/article/details/105356764?ops_request_misc=&request_id=&biz_id=102&utm_term=8086地址分配&utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduweb~default-3-105356764.142^v70^control,201^v4^add_ask)
+
+http://tianyu-code.top/Linux%E5%86%85%E6%A0%B8/x86CPU%E5%9C%B0%E5%9D%80%E7%A9%BA%E9%97%B4%E5%88%86%E9%85%8D/
+
 **Shadow RAM**也称之为"身影内存",是因为提升计算机软件高效率而采取的一种专业技术性，所运用的物理学集成ic依然是CMOS DRAM
+
+https://blog.csdn.net/weixin_30443075/article/details/97883736
+
+[(121条消息) 关于BIOS的入口地址0xFFFF0_Alix_sz的博客-CSDN博客_bios地址](https://blog.csdn.net/humanof/article/details/53844243)
+
+一般来说，ROM 的运行速度比 RAM 慢得多。由于硬件代码通常存储在 ROM 中，因此每次执行硬件代码时性能都会受到影响。可以通过将慢速 ROM 中的代码复制到 RAM 中并从 RAM 中执行代码来提高性能。包含复制代码的 RAM 称为**“影子 RAM”。**尽管 RAM 阴影可以显着提高性能，但它会使用一些额外的 RAM，这些 RAM 将不再可供应用程序使用。
+
+ 
+
+许多 BIOS（基本输入/输出系统）允许禁用 RAM 阴影。（执行此操作的方法因计算机而异；您可以参考计算机的用户手册，或联系 OEM。）禁用影子 RAM 的通常原因是回收扩展内存以供其他程序使用。它只能作为最后的手段来使用，因为禁用影子 RAM 通常会显着降低计算机速度。（一些低质量的计算机可能会减慢很多，以至于它们几乎无法使用。）由于性能成本，在大多数情况下，应该启用影子 RAM。
 
 Shadow RAM占有了系统主存的一部分地址室内空间。其编址范畴为C0000～FFFFF，即是1MB主存中的768KB～1024KB区域，这一地区通常也称之为内存 保留区，可执行程序不可以立即浏览
 
@@ -343,3 +361,11 @@ CPU通过至少一个外部芯片访问固件（用于获取指令或数据）
 在多 CPU 或多核 CPU 情况下，某一个 CPU 会被随机选取作为启动 CPU（bootstrap processor，BSP）运行 BIOS 内部的程序。其余的 CPU（application processor，AP）保持停机直到操作系统内核显式地使用它们
 
 2000 年以前的计算机主板上均使用 BIOS，如今绝大多数计算机采用的是 EFI（Mac 用的就是 EFI）或 UEFI。BIOS 正在逐步被淘汰。基于 EFI、UEFI 的开机过程与传统的BIOS不尽相同
+
+BIOS和uefi 
+
+https://blog.csdn.net/z15732621736/article/details/49407123#reply
+
+https://mp.weixin.qq.com/s?__biz=MzIyNzIxNjM2MA==&mid=486777136&idx=2&sn=c3589491491dd5b689658e8e165ee46d&chksm=70939fb747e416a19a974c5ba5317ed0effad4f795207bc75c499edf84cd55b12991de76da22&scene=27
+
+https://www.zhihu.com/question/535062479/answer/2506279466
