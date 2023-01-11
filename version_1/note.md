@@ -283,6 +283,8 @@ or cassette BASIC if no bootable disk found
 
 # other
 
+https://github.com/treelite/8086/blob/master/README.md
+
 通电后，BIOS首先连接到南桥(ESB)，然后是北桥(MCH)，最后连接CPU<img src="https://img-blog.csdnimg.cn/20191029154939933.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3R5bHQ2Njg4,size_16,color_FFFFFF,t_70" alt="天宇龙腾出品" style="zoom:25%;" />
 
 1MB以下比较特殊，里面全部都是已经被淘汰的传统BIOS和DOS关心的内容，我们叫它DOS Space或者Legacy Region
