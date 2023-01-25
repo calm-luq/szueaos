@@ -1,91 +1,135 @@
-     1                                  
-     2                                  ;初始化编译地址
-     3                                  org 0x7c00
-     4                                  
-     5                                  ;转跳到代码区
-     6 00000000 EB01                    jmp START
-     7 00000002 90                      nop
+     1                                  ;前提信息
+     2                                  AMOUNT_OF_SECTOR equ 0x1
+     3                                  BASE_OF_SECTOR equ 0x1;LBA算法
+     4                                  LOADER_ADDR equ 0x900
+     5                                  
+     6                                  ;初始化编译地址
+     7                                  org 0x7c00
      8                                  
-     9                                  ;自定义栈顶
-    10                                  Stack_Base equ 0x7c00
-    11                                  
-    12                                  START:
-    13                                  ;初始化段寄存器
-    14                                  ;此处cs=0x0000,ip=0x7c00
-    15 00000003 8CC8                    mov ax,cs
-    16 00000005 8ED8                    mov ds,ax
-    17 00000007 8ED0                    mov ss,ax
-    18 00000009 BC007C                  mov sp,Stack_Base
-    19                                  ;清屏，ah=0x06或者0x07
-    20 0000000C B406                    mov ah,0x06
-    21 0000000E B000                    mov al,0x00
-    22 00000010 B700                    mov bh,0x00
-    23 00000012 B90000                  mov cx,0x0000
-    24 00000015 BA4F18                  mov dx,0x184f
-    25 00000018 CD10                    int 0x10
-    26                                  ;文本模式下的es
-    27 0000001A B800B8                  mov ax,0xb800
-    28 0000001D 8EC0                    mov es,ax
-    29                                  ;使用文本内存显示
-    30 0000001F 26C6060A004F            mov byte [es:10],'O'
-    31 00000025 26C6060B004C            mov byte [es:11],0x4c
-    32 0000002B 26C6060C0053            mov byte [es:12],'S'
-    33 00000031 26C6060D004C            mov byte [es:13],0x4c
-    34                                  ;使用bios中断显示
-    35 00000037 1E                      push ds
-    36 00000038 07                      pop es
-    37 00000039 BD[8D00]                mov bp,BOOTMSG1
-    38 0000003C B90500                  mov cx,5
-    39 0000003F B600                    mov dh,0
-    40 00000041 B200                    mov dl,0
-    41 00000043 B700                    mov bh,0
-    42 00000045 B000                    mov al,0
-    43 00000047 B34C                    mov bl,0x4c
-    44 00000049 B413                    mov ah,0x13
-    45 0000004B CD10                    int 0x10
-    46                                  
-    47 0000004D BD[9200]                mov bp,BOOTMSG2
-    48 00000050 B90A00                  mov cx,10
-    49 00000053 B601                    mov dh,1
-    50 00000055 B200                    mov dl,0
-    51 00000057 B700                    mov bh,0
-    52 00000059 B000                    mov al,0
-    53 0000005B B34C                    mov bl,0x4c
-    54 0000005D B413                    mov ah,0x13
-    55 0000005F CD10                    int 0x10
-    56                                  ;等待键盘按键
-    57 00000061 B400                    mov ah,0
-    58 00000063 CD16                    int 0x16
-    59                                  ;显示按键
-    60 00000065 26A20E00                mov byte [es:14],al
-    61 00000069 26C6060F004C            mov byte [es:15],0x4c
-    62 0000006F 2688261000              mov byte [es:16],ah
-    63 00000074 26C60611004C            mov byte [es:17],0x4c
-    64                                  ;滚行，屏幕下卷
-    65 0000007A B407                    mov ah,0x07
-    66 0000007C B017                    mov al,23
-    67 0000007E B503                    mov ch,3
-    68 00000080 B100                    mov cl,0
-    69 00000082 B618                    mov dh,24
-    70 00000084 B24F                    mov dl,79
-    71 00000086 B777                    mov bh,0x77
-    72 00000088 CD10                    int 0x10
-    73                                  
-    74                                  ;循环，暂停在此
-    75                                  infi:
-    76 0000008A E9FDFF                  jmp near infi
-    77 0000008D 737A756561              BOOTMSG1:db 'szuea'
-    78 00000092 626F6F74696E672E2E-     BOOTMSG2:db 'booting...'
-    78 0000009B 2E                 
-    79                                  
-    80 0000009C B407                    mov ah,0x07
-    81 0000009E B001                    mov al,0x01
-    82 000000A0 B700                    mov bh,0x00
-    83 000000A2 B90000                  mov cx,0x0000
-    84 000000A5 BA4F18                  mov dx,0x184f
-    85 000000A8 CD10                    int 0x10
-    86                                  ;填充0，直到510Bytes
-    87 000000AA 00<rep 154h>            times 510-($-$$) db 0
-    88                                  
-    89                                  ;魔数
-    90 000001FE 55AA                    db 0x55,0xaa
+     9                                  ;转跳到代码区
+    10 00000000 EB01                    jmp START
+    11 00000002 90                      nop
+    12                                  
+    13                                  ;自定义栈顶
+    14                                  Stack_Base equ 0x7c00
+    15                                  
+    16                                  START:
+    17                                  ;初始化段寄存器
+    18                                  ;此处cs=0x0000,ip=0x7c00
+    19 00000003 8CC8                    mov ax,cs
+    20 00000005 8ED8                    mov ds,ax
+    21 00000007 8ED0                    mov ss,ax
+    22 00000009 BC007C                  mov sp,Stack_Base
+    23                                  
+    24                                  ;清屏，ah=0x06或者0x07
+    25 0000000C B406                    mov ah,0x06
+    26 0000000E B000                    mov al,0x00
+    27 00000010 B700                    mov bh,0x00
+    28 00000012 B90000                  mov cx,0x0000
+    29 00000015 BA4F18                  mov dx,0x184f
+    30 00000018 CD10                    int 0x10
+    31                                  
+    32                                  ;文本模式下的es
+    33 0000001A B800B8                  mov ax,0xb800
+    34 0000001D 8EC0                    mov es,ax
+    35                                  
+    36                                  ;使用文本内存显示
+    37 0000001F 26C6060A004F            mov byte [es:10],'O'
+    38 00000025 26C6060B004C            mov byte [es:11],0x4c
+    39 0000002B 26C6060C0053            mov byte [es:12],'S'
+    40 00000031 26C6060D004C            mov byte [es:13],0x4c
+    41                                  
+    42                                  ;使用bios中断显示
+    43 00000037 1E                      push ds
+    44 00000038 07                      pop es
+    45 00000039 BD[CD00]                mov bp,BOOT_MSG_1
+    46 0000003C B90500                  mov cx,5
+    47 0000003F B600                    mov dh,0
+    48 00000041 B200                    mov dl,0
+    49 00000043 B700                    mov bh,0
+    50 00000045 B000                    mov al,0
+    51 00000047 B34C                    mov bl,0x4c
+    52 00000049 B413                    mov ah,0x13
+    53 0000004B CD10                    int 0x10
+    54                                  
+    55 0000004D BD[D200]                mov bp,BOOT_MSG_2
+    56 00000050 B90A00                  mov cx,10
+    57 00000053 B601                    mov dh,1
+    58 00000055 B200                    mov dl,0
+    59 00000057 B700                    mov bh,0
+    60 00000059 B000                    mov al,0
+    61 0000005B B34C                    mov bl,0x4c
+    62 0000005D B413                    mov ah,0x13
+    63 0000005F CD10                    int 0x10
+    64                                  
+    65                                  ;等待键盘按键
+    66 00000061 B400                    mov ah,0
+    67 00000063 CD16                    int 0x16
+    68                                  
+    69                                  ;滚行，屏幕下卷
+    70 00000065 B407                    mov ah,0x07
+    71 00000067 B017                    mov al,23
+    72 00000069 B503                    mov ch,3
+    73 0000006B B100                    mov cl,0
+    74 0000006D B618                    mov dh,24
+    75 0000006F B24F                    mov dl,79
+    76 00000071 B777                    mov bh,0x77
+    77 00000073 CD10                    int 0x10
+    78                                  
+    79                                  ;端口读取硬盘
+    80 00000075 BAF201                  mov dx,0x1f2
+    81 00000078 B001                    mov al,AMOUNT_OF_SECTOR
+    82 0000007A EE                      out dx,al
+    83 0000007B 66B801000000            mov eax,BASE_OF_SECTOR
+    84 00000081 BAF301                  mov dx,0x1f3
+    85 00000084 EE                      out dx,al
+    86 00000085 66C1E808                shr eax,8
+    87 00000089 BAF401                  mov dx,0x1f4
+    88 0000008C EE                      out dx,al
+    89 0000008D 66C1E808                shr eax,8
+    90 00000091 BAF501                  mov dx,0x1f5
+    91 00000094 EE                      out dx,al
+    92 00000095 66C1E808                shr eax,8
+    93 00000099 240F                    and al,0x0f
+    94 0000009B 0CE0                    or al,0xe0
+    95 0000009D BAF601                  mov dx,0x1f6
+    96 000000A0 EE                      out dx,al
+    97 000000A1 B020                    mov al,0x20
+    98 000000A3 BAF701                  mov dx,0x1f7
+    99 000000A6 EE                      out dx,al
+   100 000000A7 BB0009                  mov bx,LOADER_ADDR
+   101                                  READ_DISK_WAIT:
+   102 000000AA 90                      nop
+   103 000000AB EC                      in al,dx
+   104 000000AC 2488                    and al,0x88
+   105 000000AE 3C08                    cmp al,0x08
+   106 000000B0 75F8                    jnz READ_DISK_WAIT
+   107 000000B2 B80100                  mov ax,AMOUNT_OF_SECTOR
+   108 000000B5 BA0001                  mov dx,256
+   109 000000B8 F7E2                    mul dx
+   110 000000BA 89C1                    mov cx,ax
+   111 000000BC BAF001                  mov dx,0x1f0
+   112                                  READ_DISK_ING:
+   113 000000BF ED                      in ax,dx
+   114 000000C0 8907                    mov [bx],ax
+   115 000000C2 83C302                  add bx,2
+   116 000000C5 E2F8                    loop READ_DISK_ING
+   117                                  
+   118                                  ;转跳到LOADER
+   119 000000C7 E9(0009)                jmp LOADER_ADDR
+   120                                  
+   121                                  ;暂停在此
+   122                                  infi:
+   123 000000CA E9FDFF                  jmp near infi
+   124                                  
+   125                                  ;信息
+   126 000000CD 737A756561              BOOT_MSG_1:db 'szuea'
+   127 000000D2 626F6F74696E672E2E-     BOOT_MSG_2:db 'booting...'
+   127 000000DB 2E                 
+   128                                  
+   129                                  
+   130                                  ;填充0，直到510Bytes
+   131 000000DC 00<rep 122h>            times 510-($-$$) db 0
+   132                                  
+   133                                  ;魔数
+   134 000001FE 55AA                    db 0x55,0xaa
