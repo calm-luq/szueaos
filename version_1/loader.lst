@@ -1,20 +1,29 @@
      1                                  org 0x900
      2                                  
-     3 00000000 B800B8                  mov ax,0xb800
-     4 00000003 8EC0                    mov es,ax
-     5 00000005 26C6060A0021            mov byte [es:10],'!'
-     6 0000000B 26C6060B004C            mov byte [es:11],0x4c
-     7 00000011 26C6060C0021            mov byte [es:12],'!'
-     8 00000017 26C6060D004C            mov byte [es:13],0x4c
-     9 0000001D 26C6060E0021            mov byte [es:14],'!'
-    10 00000023 26C6060F004C            mov byte [es:15],0x4c
-    11 00000029 26C606100021            mov byte [es:16],'!'
-    12 0000002F 26C60611004C            mov byte [es:17],0x4c
-    13 00000035 26C606120021            mov byte [es:18],'!'
-    14 0000003B 26C60613004C            mov byte [es:19],0x4c
-    15 00000041 26C606140021            mov byte [es:20],'!'
-    16 00000047 26C60615004C            mov byte [es:21],0x4c
-    17                                  
-    18                                  ;暂停在此
-    19 0000004D EBFE                    jmp $
-    20                                  
+     3 00000000 BD[2A00]                mov bp,LOADER_MSG_1
+     4 00000003 B90700                  mov cx,7
+     5 00000006 B602                    mov dh,2
+     6 00000008 B200                    mov dl,0
+     7 0000000A B700                    mov bh,0
+     8 0000000C B000                    mov al,0
+     9 0000000E B34C                    mov bl,0x4c
+    10 00000010 B413                    mov ah,0x13
+    11 00000012 CD10                    int 0x10
+    12                                  
+    13 00000014 BD[3100]                mov bp,LOADER_MSG_2
+    14 00000017 B90A00                  mov cx,10
+    15 0000001A B603                    mov dh,3
+    16 0000001C B200                    mov dl,0
+    17 0000001E B700                    mov bh,0
+    18 00000020 B000                    mov al,0
+    19 00000022 B34C                    mov bl,0x4c
+    20 00000024 B413                    mov ah,0x13
+    21 00000026 CD10                    int 0x10
+    22                                  
+    23                                  ;暂停在此
+    24 00000028 EBFE                    jmp $
+    25                                  
+    26                                  ;信息
+    27 0000002A 626F6F74206F6B          LOADER_MSG_1: db 'boot ok'
+    28 00000031 6C6F6164696E672E2E-     LOADER_MSG_2: db 'loading...'
+    28 0000003A 2E                 

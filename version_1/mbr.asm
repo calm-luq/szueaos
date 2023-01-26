@@ -77,43 +77,43 @@ mov bh,0x77
 int 0x10
 
 ;端口读取硬盘
-mov dx,0x1f2
-mov al,AMOUNT_OF_SECTOR
-out dx,al
-mov eax,BASE_OF_SECTOR
-mov dx,0x1f3
-out dx,al
-shr eax,8
-mov dx,0x1f4
-out dx,al
-shr eax,8
-mov dx,0x1f5
-out dx,al
-shr eax,8
-and al,0x0f
-or al,0xe0
-mov dx,0x1f6
-out dx,al
-mov al,0x20
-mov dx,0x1f7
-out dx,al
-mov bx,LOADER_ADDR
-READ_DISK_WAIT:
-nop
-in al,dx
-and al,0x88
-cmp al,0x08
-jnz READ_DISK_WAIT
-mov ax,AMOUNT_OF_SECTOR
-mov dx,256
-mul dx
-mov cx,ax
-mov dx,0x1f0
-READ_DISK_ING:
-in ax,dx
-mov [bx],ax
-add bx,2
-loop READ_DISK_ING
+mov dx,0x1f2            ;dx存储端口号，该端口用于记录要读取扇区的数量
+mov al,AMOUNT_OF_SECTOR ;al存储要读的扇区数量
+out dx,al               ;al发送到dx端口
+mov eax,BASE_OF_SECTOR  ;eax存储从哪个扇区开始读，采用LBA方式，就是从0开始数，1，2，3这样子
+mov dx,0x1f3            ;dx存储端口号，该端口用于记录LBA0~7位
+out dx,al               ;al发送到dx端口
+shr eax,8               ;eax右移动8位
+mov dx,0x1f4            ;dx存储端口号，该端口用于记录LBA8~15位
+out dx,al               ;al发送到dx端口
+shr eax,8               ;eax右移动8位
+mov dx,0x1f5            ;dx存储端口号，该端口用于记录LBA16~23位
+out dx,al               ;al发送到dx端口
+shr eax,8               ;eax右移动8位
+and al,0x0f             ;保留0~4位，其他设置为0
+or al,0xe0              ;5~7位用1110填充，即1110xxxx
+mov dx,0x1f6            ;dx存储端口号，该端口用于记录LBA24~27位和1110，1110表示现在采用的是LBA方式
+out dx,al               ;al发送到dx端口
+mov al,0x20             ;0x20是读命令，告诉硬盘我要读取数据
+mov dx,0x1f7            ;dx存储端口号，用于操作硬盘工作状态，也可以用于读取当前硬盘状态
+out dx,al               ;al发送到dx端口
+mov bx,LOADER_ADDR      ;硬盘读出来的数据存储的地址
+READ_DISK_WAIT:         ;
+nop                     ;不操作，用来拖时间
+in al,dx                ;读取硬盘操作状态到al
+and al,0x88             ;保留0和7位
+cmp al,0x08             ;判断0和7位，看否是就绪
+jnz READ_DISK_WAIT      ;不等于，即没就绪，再继续读取判断
+mov ax,AMOUNT_OF_SECTOR ;ax为读取的扇区数量
+mov dx,256              ;dx为一个扇区多少个字
+mul dx                  ;ax=ax*dx，得出一共多少个字
+mov cx,ax               ;存储到cx中
+mov dx,0x1f0            ;dx存储端口号，该端口用于读取扇区的内容
+READ_DISK_ING:          ;
+in ax,dx                ;将内容读取到扇区，此时内容会自动更新为下一字
+mov [bx],ax             ;将内容放到要读到的地址处
+add bx,2                ;地址加2指向下一个字的位置
+loop READ_DISK_ING      ;cx--;如果cx!=0则继续读
 
 ;转跳到LOADER
 jmp LOADER_ADDR

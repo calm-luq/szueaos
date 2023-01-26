@@ -1,20 +1,28 @@
 org 0x900
 
-mov ax,0xb800
-mov es,ax
-mov byte [es:10],'!'
-mov byte [es:11],0x4c
-mov byte [es:12],'!'
-mov byte [es:13],0x4c
-mov byte [es:14],'!'
-mov byte [es:15],0x4c
-mov byte [es:16],'!'
-mov byte [es:17],0x4c
-mov byte [es:18],'!'
-mov byte [es:19],0x4c
-mov byte [es:20],'!'
-mov byte [es:21],0x4c
+mov bp,LOADER_MSG_1
+mov cx,7
+mov dh,2
+mov dl,0
+mov bh,0
+mov al,0
+mov bl,0x4c
+mov ah,0x13
+int 0x10
+
+mov bp,LOADER_MSG_2
+mov cx,10
+mov dh,3
+mov dl,0
+mov bh,0
+mov al,0
+mov bl,0x4c
+mov ah,0x13
+int 0x10
 
 ;暂停在此
 jmp $
 
+;信息
+LOADER_MSG_1: db 'boot ok'
+LOADER_MSG_2: db 'loading...'

@@ -77,43 +77,43 @@
     77 00000073 CD10                    int 0x10
     78                                  
     79                                  ;端口读取硬盘
-    80 00000075 BAF201                  mov dx,0x1f2
-    81 00000078 B001                    mov al,AMOUNT_OF_SECTOR
-    82 0000007A EE                      out dx,al
-    83 0000007B 66B801000000            mov eax,BASE_OF_SECTOR
-    84 00000081 BAF301                  mov dx,0x1f3
-    85 00000084 EE                      out dx,al
-    86 00000085 66C1E808                shr eax,8
-    87 00000089 BAF401                  mov dx,0x1f4
-    88 0000008C EE                      out dx,al
-    89 0000008D 66C1E808                shr eax,8
-    90 00000091 BAF501                  mov dx,0x1f5
-    91 00000094 EE                      out dx,al
-    92 00000095 66C1E808                shr eax,8
-    93 00000099 240F                    and al,0x0f
-    94 0000009B 0CE0                    or al,0xe0
-    95 0000009D BAF601                  mov dx,0x1f6
-    96 000000A0 EE                      out dx,al
-    97 000000A1 B020                    mov al,0x20
-    98 000000A3 BAF701                  mov dx,0x1f7
-    99 000000A6 EE                      out dx,al
-   100 000000A7 BB0009                  mov bx,LOADER_ADDR
-   101                                  READ_DISK_WAIT:
-   102 000000AA 90                      nop
-   103 000000AB EC                      in al,dx
-   104 000000AC 2488                    and al,0x88
-   105 000000AE 3C08                    cmp al,0x08
-   106 000000B0 75F8                    jnz READ_DISK_WAIT
-   107 000000B2 B80100                  mov ax,AMOUNT_OF_SECTOR
-   108 000000B5 BA0001                  mov dx,256
-   109 000000B8 F7E2                    mul dx
-   110 000000BA 89C1                    mov cx,ax
-   111 000000BC BAF001                  mov dx,0x1f0
-   112                                  READ_DISK_ING:
-   113 000000BF ED                      in ax,dx
-   114 000000C0 8907                    mov [bx],ax
-   115 000000C2 83C302                  add bx,2
-   116 000000C5 E2F8                    loop READ_DISK_ING
+    80 00000075 BAF201                  mov dx,0x1f2            ;dx存储端口号，该端口用于记录要读取扇区的数量
+    81 00000078 B001                    mov al,AMOUNT_OF_SECTOR ;al存储要读的扇区数量
+    82 0000007A EE                      out dx,al               ;al发送到dx端口
+    83 0000007B 66B801000000            mov eax,BASE_OF_SECTOR  ;eax存储从哪个扇区开始读，采用LBA方式，就是从0开始数，1，2，3这样子
+    84 00000081 BAF301                  mov dx,0x1f3            ;dx存储端口号，该端口用于记录LBA0~7位
+    85 00000084 EE                      out dx,al               ;al发送到dx端口
+    86 00000085 66C1E808                shr eax,8               ;eax右移动8位
+    87 00000089 BAF401                  mov dx,0x1f4            ;dx存储端口号，该端口用于记录LBA8~15位
+    88 0000008C EE                      out dx,al               ;al发送到dx端口
+    89 0000008D 66C1E808                shr eax,8               ;eax右移动8位
+    90 00000091 BAF501                  mov dx,0x1f5            ;dx存储端口号，该端口用于记录LBA16~23位
+    91 00000094 EE                      out dx,al               ;al发送到dx端口
+    92 00000095 66C1E808                shr eax,8               ;eax右移动8位
+    93 00000099 240F                    and al,0x0f             ;保留0~4位，其他设置为0
+    94 0000009B 0CE0                    or al,0xe0              ;5~7位用1110填充，即1110xxxx
+    95 0000009D BAF601                  mov dx,0x1f6            ;dx存储端口号，该端口用于记录LBA24~27位和1110，1110表示现在采用的是LBA方式
+    96 000000A0 EE                      out dx,al               ;al发送到dx端口
+    97 000000A1 B020                    mov al,0x20             ;0x20是读命令，告诉硬盘我要读取数据
+    98 000000A3 BAF701                  mov dx,0x1f7            ;dx存储端口号，用于操作硬盘工作状态，也可以用于读取当前硬盘状态
+    99 000000A6 EE                      out dx,al               ;al发送到dx端口
+   100 000000A7 BB0009                  mov bx,LOADER_ADDR      ;硬盘读出来的数据存储的地址
+   101                                  READ_DISK_WAIT:         ;
+   102 000000AA 90                      nop                     ;不操作，用来拖时间
+   103 000000AB EC                      in al,dx                ;读取硬盘操作状态到al
+   104 000000AC 2488                    and al,0x88             ;保留0和7位
+   105 000000AE 3C08                    cmp al,0x08             ;判断0和7位，看否是就绪
+   106 000000B0 75F8                    jnz READ_DISK_WAIT      ;不等于，即没就绪，再继续读取判断
+   107 000000B2 B80100                  mov ax,AMOUNT_OF_SECTOR ;ax为读取的扇区数量
+   108 000000B5 BA0001                  mov dx,256              ;dx为一个扇区多少个字
+   109 000000B8 F7E2                    mul dx                  ;ax=ax*dx，得出一共多少个字
+   110 000000BA 89C1                    mov cx,ax               ;存储到cx中
+   111 000000BC BAF001                  mov dx,0x1f0            ;dx存储端口号，该端口用于读取扇区的内容
+   112                                  READ_DISK_ING:          ;
+   113 000000BF ED                      in ax,dx                ;将内容读取到扇区，此时内容会自动更新为下一字
+   114 000000C0 8907                    mov [bx],ax             ;将内容放到要读到的地址处
+   115 000000C2 83C302                  add bx,2                ;地址加2指向下一个字的位置
+   116 000000C5 E2F8                    loop READ_DISK_ING      ;cx--;如果cx!=0则继续读
    117                                  
    118                                  ;转跳到LOADER
    119 000000C7 E9(0009)                jmp LOADER_ADDR
