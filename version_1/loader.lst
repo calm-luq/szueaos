@@ -1,29 +1,94 @@
-     1                                  org 0x900
-     2                                  
-     3 00000000 BD[2A00]                mov bp,LOADER_MSG_1
-     4 00000003 B90700                  mov cx,7
-     5 00000006 B602                    mov dh,2
-     6 00000008 B200                    mov dl,0
-     7 0000000A B700                    mov bh,0
-     8 0000000C B000                    mov al,0
-     9 0000000E B34C                    mov bl,0x4c
-    10 00000010 B413                    mov ah,0x13
-    11 00000012 CD10                    int 0x10
-    12                                  
-    13 00000014 BD[3100]                mov bp,LOADER_MSG_2
-    14 00000017 B90A00                  mov cx,10
-    15 0000001A B603                    mov dh,3
-    16 0000001C B200                    mov dl,0
-    17 0000001E B700                    mov bh,0
-    18 00000020 B000                    mov al,0
-    19 00000022 B34C                    mov bl,0x4c
-    20 00000024 B413                    mov ah,0x13
-    21 00000026 CD10                    int 0x10
-    22                                  
-    23                                  ;暂停在此
-    24 00000028 EBFE                    jmp $
-    25                                  
-    26                                  ;信息
-    27 0000002A 626F6F74206F6B          LOADER_MSG_1: db 'boot ok'
-    28 00000031 6C6F6164696E672E2E-     LOADER_MSG_2: db 'loading...'
-    28 0000003A 2E                 
+     1                                  
+     2                                  LOADER_ADDR equ 0x900
+     3                                  
+     4                                  section core vstart=LOADER_ADDR
+     5                                  
+     6 00000000 EB37                    jmp LOADER_START
+     7                                  
+     8                                  ;信息
+     9 00000002 626F6F74206F6B          LOADER_MSG_1: db 'boot ok'
+    10 00000009 6C6F6164696E672E2E-     LOADER_MSG_2: db 'loading...'
+    10 00000012 2E                 
+    11                                  
+    12 00000013 0000000000000000        DESK_NULL:	dd 0x00000000,0x00000000
+    13 0000001B FFFF00000098CF00        DESK_CODE:	dd 0x0000ffff,00000000_1_1_0_0_1111_1_00_1_1000_00000000b
+    14 00000023 FFFF00000092CF00        DESK_DATA:	dd 0x0000ffff,00000000_1_1_0_0_1111_1_00_1_0010_00000000b
+    15 0000002B 070000800B92C000        DESK_VIDEO:	dd 0x80000007,00000000_1_1_0_0_0000_1_00_1_0010_00001011b
+    16                                  
+    17                                  SELECTOR_NULL equ 0x0<<3
+    18                                  SELECTOR_CODE equ 0x1<<3
+    19                                  SELECTOR_DATA equ 0x2<<3
+    20                                  SELECTOR_VIDEO equ 0x3<<3
+    21                                  
+    22 00000033 2000                    GDT_PTR: 	dw (DESK_CODE-DESK_NULL) * 4;偏移长度，所以也可以写成(DESK_DATA-DECK_CODE) * 4
+    23 00000035 [13000000]              			dd	DESK_NULL
+    24                                  LOADER_START:
+    25 00000039 BD[0200]                mov bp,LOADER_MSG_1
+    26 0000003C B90700                  mov cx,7
+    27 0000003F B602                    mov dh,2
+    28 00000041 B200                    mov dl,0
+    29 00000043 B700                    mov bh,0
+    30 00000045 B000                    mov al,0
+    31 00000047 B34C                    mov bl,0x4c
+    32 00000049 B413                    mov ah,0x13
+    33 0000004B CD10                    int 0x10
+    34                                  
+    35 0000004D BD[0900]                mov bp,LOADER_MSG_2
+    36 00000050 B90A00                  mov cx,10
+    37 00000053 B603                    mov dh,3
+    38 00000055 B200                    mov dl,0
+    39 00000057 B700                    mov bh,0
+    40 00000059 B000                    mov al,0
+    41 0000005B B34C                    mov bl,0x4c
+    42 0000005D B413                    mov ah,0x13
+    43 0000005F CD10                    int 0x10
+    44                                  
+    45                                  ;开启a20
+    46 00000061 E492                    in al,0x92
+    47 00000063 0C02                    or al,00000010b
+    48 00000065 E692                    out 0x92,al
+    49                                  
+    50                                  ;加载gdt
+    51 00000067 0F0116[3300]            lgdt [GDT_PTR]
+    52                                  
+    53                                  ;开启pe0
+    54 0000006C 0F20C0                  mov eax,cr0
+    55 0000006F 6683C801                or eax,0x1
+    56 00000073 0F22C0                  mov cr0,eax
+    57                                  
+    58                                  ;刷新流水线
+    59 00000076 66EA[7E000000]0800      jmp dword SELECTOR_CODE:PROTECT_MODE_START
+    60                                  
+    61                                  ;转换编码
+    62                                  [bits 32]
+    63                                  
+    64                                  PROTECT_MODE_START:
+    65 0000007E 66B81000                mov ax,SELECTOR_DATA
+    66 00000082 8ED8                    mov ds,ax
+    67 00000084 8EC0                    mov es,ax
+    68 00000086 8ED0                    mov ss,ax
+    69 00000088 BC00090000              mov esp,LOADER_ADDR
+    70                                  
+    71 0000008D 66B81800                mov ax,SELECTOR_VIDEO
+    72 00000091 8EE8                    mov gs,ax
+    73                                  
+    74 00000093 65C605800200006C        mov byte [gs:640],'l'
+    75 0000009B 65C605810200004C        mov byte [gs:641],0x4c
+    76 000000A3 65C605820200006F        mov byte [gs:642],'o'
+    77 000000AB 65C605830200004C        mov byte [gs:643],0x4c
+    78 000000B3 65C6058402000061        mov byte [gs:644],'a'
+    79 000000BB 65C605850200004C        mov byte [gs:645],0x4c
+    80 000000C3 65C6058602000064        mov byte [gs:646],'d'
+    81 000000CB 65C605870200004C        mov byte [gs:647],0x4c
+    82 000000D3 65C6058802000000        mov byte [gs:648],''
+    83 000000DB 65C605890200004C        mov byte [gs:649],0x4c
+    84 000000E3 65C6058A0200006F        mov byte [gs:650],'o'
+    85 000000EB 65C6058B0200004C        mov byte [gs:651],0x4c
+    86 000000F3 65C6058C0200006B        mov byte [gs:652],'k'
+    87 000000FB 65C6058D0200004C        mov byte [gs:653],0x4c
+    88                                  
+    89                                  
+    90                                  
+    91                                  ;暂停在此
+    92 00000103 EBFE                    jmp $
+    93                                  
